@@ -19,5 +19,5 @@ from the model are:
  - Specific electricity consumption
  - Specific net heat consumption (assuming all heat streams are 100 % utilizable)
 
-The literature and assumptions used for the model are displayed extensively 
+The literature sources and assumptions used for the model are displayed extensively 
 in the comments of the code.
