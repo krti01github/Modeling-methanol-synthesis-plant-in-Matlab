@@ -17,7 +17,7 @@ from the model are:
  - Product stream flow
  - Yields, conversions and selectivities
  - Specific electricity consumption
- - Net heat consumption (assuming all heat streams are 100 % utilizable)
+ - Specific net heat consumption (assuming all heat streams are 100 % utilizable)
 
 The literature and assumptions used for the model are displayed extensively 
 in the comments of the code.
