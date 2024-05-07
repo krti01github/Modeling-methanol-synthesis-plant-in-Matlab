@@ -17,9 +17,9 @@ clear
 
 % Load CSVs into tables
 t_data_table = readtable(['simulation_results/official_results/' ...
-    'pulp_mill_nominal_case_t_results_20240325_0906.csv']);
+    'pulp_mill_min_case_opt_t_results_20240430_2039.csv']);
 z_data_table = readtable(['simulation_results/official_results/' ...
-    'pulp_mill_nominal_case_z_results_0_d_20240325_0906.csv']);
+    'pulp_mill_min_case_opt_z_results_0_d_20240430_2039.csv']);
 
 % Tables into matrices
 % First columns are texts explaining the variables and units. See tables

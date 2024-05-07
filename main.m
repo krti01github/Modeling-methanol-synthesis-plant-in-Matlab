@@ -16,7 +16,10 @@
 %          [Arab, Commenge, Portha, Falk, 2014, "Methanol synthesis from 
 %           CO2 and H2 in multi-tubular fixed-bed reactor and 
 %           multi-tubular reactor filled with monoliths", 
-%           DOI: 10.1016/j.cherd.2014.03.009]
+%           DOI: 10.1016/j.cherd.2014.03.009],
+%          [Mignard, Pritchard, 2008, "On the use of electrolytic hydrogen 
+%           from variable renewable energies for the enhanced conversion 
+%           of biomass to fuels", DOI: 10.1016/j.cherd.2007.12.008]
 %
 % Bio-CCU project
 % Author: Kristian Tiiro
@@ -43,11 +46,15 @@ close all
 % 2 = [Hartig & Keil, 1993] case
 % 3 = [Parvasi et al., 2008] dynamic case
 % 4 = [Van-Dal & Bouallou, 2013] case
-% 5 = Pulp mill case at nominal flow, Bio-CCU, [Gardarsdottir et al. 2014]
-% 6 = Pulp mill case at maximal flow, Bio-CCU
-% 7 = Pulp mill case at minimal flow, Bio-CCU
+% 5 = Pulp mill case at nominal flow, [Gardarsdottir et al. 2014]
+% 6 = Pulp mill at maximal flow
+% 7 = Pulp mill at minimal flow
+% 8 = Pulp mill minflow, T_HE1, T_shell and r_R_max to get nominal MeOH
+% 9 = Pulp mill nominal, but kinetics from [Mignard, 2008]
+% 10 = Pulp mill nominal, but T low
+% 11 = Pulp mill nominal, but a_cat 50 % 
 
-choice = 1;
+choice = 6;
 
 % --- Default Initialization ---------------------------------------------
 
@@ -280,6 +287,142 @@ switch choice
         m_dot_CP1, y_mass_CP1] ...
         = params_man_vars_init_pulp_mill(n_dot_Perm, y_molar_Perm, ...
         M, r_tube_in, roo_cat, eps_b, z_tot);
+
+        T_HE1 = 480; T_shell = 543.9; r_R_max = 7;
+
+    case 8
+
+        t_d_0 = 0;
+        t_d_step = 7;
+        t_d_final = 0*t_d_step;
+        t_span = t_d_0:t_d_step:t_d_final;
+        t_first = t_span(1);
+        t_last = t_span(end);
+        % Using maximum permeate flow case
+        case_name = 'pulp_mill_min_case_opt';
+        ode45_max_step = z_tot / 100;
+        delta_T_limit = 0.1; % [K]
+        delta_results_tol = 10^(-6);   % [10*kg / s] / [-]
+        max_iters = 5000;    % [-]
+        alpha = 1.0;
+
+        % CO2 capture membrane permeate, [mol / s]    
+        n_dot_Perm = 429.953099331621 + 30.4844172345942 + ...
+                     10.6268055665933;
+        % Molar fractions of CO2 capture membrane permeate, [-]
+        % The components are different than in other arrays,
+        y_molar_Perm = [429.953099331621 / n_dot_Perm;  % CO2
+                        30.4844172345942 / n_dot_Perm;  % N2
+                        10.6268055665933 / n_dot_Perm;  % O2
+                        0.0];                           % H2O
+        [N_tubes, ...
+        y_mass_F, m_dot_F, T_HE1, T_shell, r_R_max, ...
+        m_dot_CP1, y_mass_CP1] ...
+        = params_man_vars_init_pulp_mill_opt(n_dot_Perm, y_molar_Perm, ...
+        M, r_tube_in, roo_cat, eps_b, z_tot);
+
+        r_R_max = 11.19;
+        T_shell = 534.1;
+        T_HE1 = 505.2;
+
+        m_dot_CP1 = r_R_max * m_dot_F;
+
+     case 9
+
+        t_d_0 = 0;
+        t_d_step = 7;
+        t_d_final = 0*t_d_step;
+        t_span = t_d_0:t_d_step:t_d_final;
+        t_first = t_span(1);
+        t_last = t_span(end);
+        case_name = 'pulp_mill_mignard_kinetics';
+        ode45_max_step = z_tot / 2500;
+        delta_T_limit = 0.01; % [K]
+        delta_results_tol = 10^(-6);   % [10*kg / s] / [-]
+        max_iters = 5000;    % [-]
+        alpha = 1.00;
+
+        % CO2 capture membrane permeate, [mol / s]
+        n_dot_Perm = 439.4;
+        % Molar fractions of CO2 capture membrane permeate, [-]
+        % The components are different than in other arrays,
+        y_molar_Perm = [0.978;  % CO2
+                        0.015;  % N2
+                        0.006;  % O2
+                        0.0];   % H2O
+        [N_tubes, ...
+        y_mass_F, m_dot_F, T_HE1, T_shell, r_R_max, ...
+        m_dot_CP1, y_mass_CP1] ...
+        = params_man_vars_init_pulp_mill(n_dot_Perm, y_molar_Perm, ...
+        M, r_tube_in, roo_cat, eps_b, z_tot);
+
+        % Kinetic parameter adjustements from [Mignard, 2008]
+        A_B_k_red(4, 2) = 40000;    % [J / (mol * K)], Appendix A
+        A_B_k_red(5, 2) = -98084;   % [J / (mol * K)], Appendix A
+
+    case 10
+
+        t_d_0 = 0;
+        t_d_step = 7;
+        t_d_final = 0*t_d_step;
+        t_span = t_d_0:t_d_step:t_d_final;
+        t_first = t_span(1);
+        t_last = t_span(end);
+        case_name = 'pulp_mill_nominal_case_low_T';
+        ode45_max_step = z_tot / 2500;
+        delta_T_limit = 0.01; % [K]
+        delta_results_tol = 10^(-6);   % [10*kg / s] / [-]
+        max_iters = 5000;    % [-]
+        alpha = 1.00;
+
+        % CO2 capture membrane permeate, [mol / s]
+        n_dot_Perm = 439.4;
+        % Molar fractions of CO2 capture membrane permeate, [-]
+        % The components are different than in other arrays,
+        y_molar_Perm = [0.978;  % CO2
+                        0.015;  % N2
+                        0.006;  % O2
+                        0.0];   % H2O
+        [N_tubes, ...
+        y_mass_F, m_dot_F, T_HE1, T_shell, r_R_max, ...
+        m_dot_CP1, y_mass_CP1] ...
+        = params_man_vars_init_pulp_mill(n_dot_Perm, y_molar_Perm, ...
+        M, r_tube_in, roo_cat, eps_b, z_tot);
+
+                % Manenti 2014
+        T_HE1 = 484;
+        T_shell = 520;
+
+   case 11
+
+        t_d_0 = 0;
+        t_d_step = 7;
+        t_d_final = 0*t_d_step;
+        t_span = t_d_0:t_d_step:t_d_final;
+        t_first = t_span(1);
+        t_last = t_span(end);
+        case_name = 'pulp_mill_nominal_case_old_cat';
+        ode45_max_step = z_tot / 2500;
+        delta_T_limit = 0.01; % [K]
+        delta_results_tol = 10^(-6);   % [10*kg / s] / [-]
+        max_iters = 5000;    % [-]
+        alpha = 1.00;
+
+        % CO2 capture membrane permeate, [mol / s]
+        n_dot_Perm = 439.4;
+        % Molar fractions of CO2 capture membrane permeate, [-]
+        % The components are different than in other arrays,
+        y_molar_Perm = [0.978;  % CO2
+                        0.015;  % N2
+                        0.006;  % O2
+                        0.0];   % H2O
+        [N_tubes, ...
+        y_mass_F, m_dot_F, T_HE1, T_shell, r_R_max, ...
+        m_dot_CP1, y_mass_CP1] ...
+        = params_man_vars_init_pulp_mill(n_dot_Perm, y_molar_Perm, ...
+        M, r_tube_in, roo_cat, eps_b, z_tot);
+
+        a_cat_t = 0.5 * a_cat_t;
 
 end
 

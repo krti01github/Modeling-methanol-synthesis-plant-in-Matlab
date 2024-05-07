@@ -288,19 +288,23 @@ while delta_results_max > delta_results_tol && ...
 
 end
 
-% Turn tube molar fractions into mass fractions for plotting 
-y_molar_tube = zeros(size(y_mass_tube));
-for iz = 1:size(y_mass_tube, 2)
-    y_molar_tube(:, iz) = mass_fractions_into_molar_fractions(...
-        y_mass_tube(:, iz), M);
+if t_d == t_last
+
+    % Turn tube molar fractions into mass fractions for plotting 
+    y_molar_tube = zeros(size(y_mass_tube));
+    for iz = 1:size(y_mass_tube, 2)
+        y_molar_tube(:, iz) = mass_fractions_into_molar_fractions(...
+            y_mass_tube(:, iz), M);
+    end
+    
+    % Interpolate to enable plotting the catalyst activity
+    a_cat = interp1(z_cat, a_cat_t, z_span);
+    
+    % Plot reactor tube length dependent variables
+    plot_vs_z(z_span, y_molar_tube, T_tube, T_shell, P_tube, r, ...
+        eta_reac, y_molar_eq, a_cat, t_d)
+
 end
-
-% Interpolate to enable plotting the catalyst activity
-a_cat = interp1(z_cat, a_cat_t, z_span);
-
-% Plot reactor tube length dependent variables
-plot_vs_z(z_span, y_molar_tube, T_tube, T_shell, P_tube, r, ...
-    eta_reac, y_molar_eq, a_cat, t_d)
 
 % Save reactor tube length dependent variables during first and last
 % time instances
