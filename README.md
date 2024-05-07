@@ -11,6 +11,8 @@ Model portrays a methanol synthesis plant including:
 The model can be simulated from main.m
 The simulation is able to model the steady state behaviour of the plant 
 at different catalyst activation values, and age the catalyst dynamically.
+The catalyst deactivation model however doesn't seem realistic as it results in 
+catalyst losing activity much faster than what is reported in the used literature.
 
 Mass and energy balances are considered, and the most important outputs 
 from the model are:
